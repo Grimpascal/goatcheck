@@ -1,0 +1,275 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:goatcheck/Register.dart';
+import 'package:goatcheck/dashboard.dart';
+import 'package:goatcheck/lupaPassword.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+      debugShowCheckedModeBanner: false,
+      title: "GoatCheck",
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFEFFFC8)),
+      ),
+      home: const LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool _obscureText = true;
+  bool _rememberMe = false;
+  bool _isFirebaseReady = false;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose(){
+    _emailController.dispose();
+    _passwordController.dispose();
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    _setupFirebase();
+  }
+
+Future<void> _setupFirebase() async {
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyCBwX6dYLD5jGkA3XU1GKm2DF7Tn8I7cjM", 
+        appId: "1:608287258205:android:a047e0f3fa5fa30769ffb4",       
+        messagingSenderId: "...",
+        projectId: "goatcheck-ppl",
+      ),
+    );
+    if (mounted) setState(() => _isFirebaseReady = true);
+    print("Firebase Berhasil!");
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+Future<void> _login() async {
+  try {
+    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    await FirebaseFirestore.instance
+        .collection('peternak')
+        .doc(userCredential.user!.uid)
+        .update({
+      'password': _passwordController.text.trim(), 
+      'updated_at': FieldValue.serverTimestamp(),    
+    });
+
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const dashboard()),
+        (Route<dynamic> route) => false,
+      );
+    }
+  } on FirebaseAuthException catch (e) {
+    String message = "Terjadi kesalahan";
+    
+    if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+      message = "Email atau password salah";
+    } else if (e.code == 'wrong-password') {
+      message = "Password salah";
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } catch (e) {
+    print(e.toString());
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFEFFFC8),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 50,
+            left: -50,
+            child: Opacity(
+              opacity: 0.2,
+              child: Icon(
+                Icons.cruelty_free,
+                size: 300,
+                color: Colors.green.shade300,
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 100), 
+                  RichText(
+                    text: const TextSpan(
+                      style: TextStyle(fontSize: 32, color: Color(0xFF3B341F)),
+                      children: [
+                        TextSpan(text: 'Selamat Datang\n'),
+                        TextSpan(text: 'Di '),
+                        TextSpan(
+                          text: 'GOATCheck',
+                          style: TextStyle(fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 60),
+                  const Text("Masukkan akun anda untuk melanjutkan", 
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 20),
+                  
+                  
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      hintText: 'email',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscureText,
+                    decoration: InputDecoration(
+                      hintText: 'password',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _obscureText = !_obscureText),
+                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (val) => setState(() => _rememberMe = val!),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                          const Text("Ingat saya"),
+                        ],
+                      ),
+                      TextButton(
+                        onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const lupaPassword()));},
+                        child: const Text("lupa password?", 
+                          style: TextStyle(decoration: TextDecoration.underline, color: Colors.black)),
+                          
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF85CB33 ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.login, color: Colors.black),
+                          SizedBox(width: 10),
+                          Text("Masuk", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                 
+                  Center(
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(text: "Belum memiliki akun? "),
+                          TextSpan(
+                            text: "Mendaftar",
+                            style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const Register())
+                              );
+                            }
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

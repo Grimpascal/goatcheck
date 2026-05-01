@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "608287258205",
+    "project_id": "goatcheck-ppl",
+    "storage_bucket": "goatcheck-ppl.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608287258205:android:a047e0f3fa5fa30769ffb4",
+        "android_client_info": {
+          "package_name": "com.example.goatcheck"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBwX6dYLD5jGkA3XU1GKm2DF7Tn8I7cjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
