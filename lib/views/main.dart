@@ -3,15 +3,30 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:goatcheck/Register.dart';
-import 'package:goatcheck/dashboard.dart';
-import 'package:goatcheck/lupaPassword.dart';
+import 'package:goatcheck/controllers/auth.dart';
+import 'package:goatcheck/views/Register.dart';
+import 'package:goatcheck/views/dashboard.dart';
+import 'package:goatcheck/views/lupaPassword.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyCBwX6dYLD5jGkA3XU1GKm2DF7Tn8I7cjM", 
+        appId: "1:608287258205:android:a047e0f3fa5fa30769ffb4",       
+        messagingSenderId: "...",
+        projectId: "goatcheck-ppl",
+      ),
+    );
+  } catch (e) {
+    print("Firebase init error: $e");
+  }
+
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
@@ -52,6 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _rememberMe = false;
   bool _isFirebaseReady = false;
 
+  late AuthController _authController;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -59,72 +75,14 @@ class _LoginPageState extends State<LoginPage> {
   void dispose(){
     _emailController.dispose();
     _passwordController.dispose();
+    super.dispose();
   }
 
   @override
   void initState(){
     super.initState();
-    _setupFirebase();
+    _authController = AuthController();
   }
-
-Future<void> _setupFirebase() async {
-  try {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyCBwX6dYLD5jGkA3XU1GKm2DF7Tn8I7cjM", 
-        appId: "1:608287258205:android:a047e0f3fa5fa30769ffb4",       
-        messagingSenderId: "...",
-        projectId: "goatcheck-ppl",
-      ),
-    );
-    if (mounted) setState(() => _isFirebaseReady = true);
-    print("Firebase Berhasil!");
-  } catch (e) {
-    print("Error: $e");
-  }
-}
-
-Future<void> _login() async {
-  try {
-    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-
-    await FirebaseFirestore.instance
-        .collection('peternak')
-        .doc(userCredential.user!.uid)
-        .update({
-      'password': _passwordController.text.trim(), 
-      'updated_at': FieldValue.serverTimestamp(),    
-    });
-
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const dashboard()),
-        (Route<dynamic> route) => false,
-      );
-    }
-  } on FirebaseAuthException catch (e) {
-    String message = "Terjadi kesalahan";
-    
-    if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-      message = "Email atau password salah";
-    } else if (e.code == 'wrong-password') {
-      message = "Password salah";
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  } catch (e) {
-    print(e.toString());
-  }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +186,13 @@ Future<void> _login() async {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: () {
+                        _authController.login(
+                          context: context,
+                          email: _emailController.text,
+                          password: _passwordController.text,
+                          targetPage: const dashboard());
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF85CB33 ),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
