@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:goatcheck/controllers/auth.dart';
 import 'package:goatcheck/views/main.dart';
 
 class Register extends StatefulWidget {
@@ -26,59 +27,25 @@ class _RegisterState extends State<Register> {
   bool _tutupSandi = true;
   bool _tutupUlangSandi = true;
 
+  late AuthController _authController;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  Future<void> _register() async {
+  @override
+  void initState() {
+    super.initState();
+    _authController = AuthController(); 
+  }
 
-    String password = _passwordController.text.trim();
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password tidak cocok!")),
-      );
-      return;
-    }
-
-    if(password.length < 8){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password minimal 8 huruf"), backgroundColor: Colors.red),
-      );
-      return;
-    }
-
-    try{
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim());
-
-        await FirebaseFirestore.instance.collection('peternak').doc(userCredential.user!.uid).set({
-          'nama': _namaController.text.trim(),
-          'email': _emailController.text.trim(),
-          'password': _passwordController.text.trim(),
-          'created_at': FieldValue.serverTimestamp(),
-          'updated_at': FieldValue.serverTimestamp()
-        });
-        if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Akun berhasil dibuat! Silakan masuk."),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-          Future.delayed(const Duration(seconds: 2), () {
-          Navigator.pop(context); // Kembali ke halaman Login
-        });
-      }
-      }on FirebaseAuthException catch(e){
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Terjadi kesalahan"))
-        );
-      }
-
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _namaController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -175,7 +142,15 @@ class _RegisterState extends State<Register> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: _register,
+                    onPressed: (){
+                       _authController.register(
+                        context: context,
+                        nama: _namaController.text.trim(),
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                        confirmPassword: _confirmPasswordController.text.trim()
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF85CB33),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))

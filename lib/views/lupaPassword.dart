@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:goatcheck/controllers/auth.dart';
 import 'package:goatcheck/views/Register.dart';
 
 class lupaPassword extends StatefulWidget {
@@ -22,34 +23,20 @@ class lupaPassword extends StatefulWidget {
 
 class _lupaPasswordState extends State<lupaPassword> {
 
-  final TextEditingController _emailController = TextEditingController(); 
+  final TextEditingController _emailController = TextEditingController();
 
-  Future<void> _resetPassword() async{
-    String email = _emailController.text.trim();
+  late AuthController _authController;
 
-    if(email.isEmpty){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Masukkan email terlebih dahulu"), backgroundColor: Colors.red,)
-      );
-      return;
+  @override
+    void initState() {
+      super.initState();
+      _authController = AuthController(); 
     }
 
-    try{
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Link reset telah dikirim"), backgroundColor: Colors.green,)
-      );
-    }on FirebaseAuthException catch(e){
-      String message = "terjadi kesalahan";
-      if(e.code == 'user-not-found'){
-        message = "Email tidak terdaftar dalam sistem";
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message))
-      );
-    }
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -101,7 +88,9 @@ class _lupaPasswordState extends State<lupaPassword> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _resetPassword,
+                  onPressed: (){
+                    _authController.resetPassword(context: context, email: _emailController.text.trim());
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF85CB33),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))
@@ -112,7 +101,7 @@ class _lupaPasswordState extends State<lupaPassword> {
                       Icon(Icons.send_outlined, color: Colors.black),
                       SizedBox(width: 10,),
                       Text(
-                        "Kirim kode OTP",
+                        "Kirim Link Reset",
                         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15)),
                     ],
                   )
