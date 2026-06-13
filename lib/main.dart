@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:goatcheck/views/dashboard.dart';
 import 'package:goatcheck/views/lupaPassword.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:goatcheck/services/background_service.dart';
 
 
 void main() async {
@@ -23,6 +23,7 @@ void main() async {
         projectId: "goatcheck-ppl",
       ),
     );
+    await MyBackgroundService.initializeService();
   } catch (e) {
     print("Firebase init error: $e");
   }
@@ -50,7 +51,22 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFEFFFC8)),
       ),
-      home: const LoginPage(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(color: Colors.black),
+              ),
+            );
+          }
+          if (snapshot.hasData) {
+            return const dashboard();
+          }
+          return const LoginPage();
+        },
+      ),
     );
   }
 }

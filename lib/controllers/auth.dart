@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:goatcheck/models/peternak.dart';
-import 'package:goatcheck/services/auth_service.dart'; 
+import 'package:goatcheck/services/auth_service.dart';
+import 'package:goatcheck/main.dart'; 
 
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -178,6 +179,23 @@ Future<void> resetPassword({
     } catch (e) {
       if (context.mounted) {
         _showSnackBar(context, "Error: ${e.toString()}", Colors.red);
+      }
+    }
+  }
+
+  Future<void> logout({required BuildContext context}) async {
+    try {
+      await _auth.signOut();
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showSnackBar(context, "Gagal keluar: ${e.toString()}", Colors.red);
       }
     }
   }
