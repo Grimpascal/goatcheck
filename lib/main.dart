@@ -42,7 +42,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      useInheritedMediaQuery: true,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
@@ -81,7 +80,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
   bool _rememberMe = false;
-  bool _isFirebaseReady = false;
 
   late AuthController _authController;
   final TextEditingController _emailController = TextEditingController();

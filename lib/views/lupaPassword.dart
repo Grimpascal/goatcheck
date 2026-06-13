@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:goatcheck/controllers/auth.dart';
@@ -6,16 +5,6 @@ import 'package:goatcheck/views/Register.dart';
 
 class lupaPassword extends StatefulWidget {
   const lupaPassword({super.key});
-
-    @override
-    Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFEFFFC8))
-      ),
-    );
-  }
 
   @override
   State<lupaPassword> createState() => _lupaPasswordState();
@@ -49,7 +38,7 @@ class _lupaPasswordState extends State<lupaPassword> {
           title: Text("Kembali"),
         ),
         body: Padding(
-          padding: const EdgeInsetsGeometry.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -93,7 +82,7 @@ class _lupaPasswordState extends State<lupaPassword> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF85CB33),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,

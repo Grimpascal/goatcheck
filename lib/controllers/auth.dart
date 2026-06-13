@@ -2,13 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:goatcheck/models/peternak.dart';
-import 'package:goatcheck/services/auth_service.dart';
 import 'package:goatcheck/main.dart'; 
 
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
+
 
   
 Future<void> register({
@@ -64,11 +63,13 @@ Future<void> register({
         });
       }
     } on FirebaseAuthException catch (e) {
-      
-      _showSnackBar(context, e.message.toString(), Colors.red);
+      if (context.mounted) {
+        _showSnackBar(context, e.message.toString(), Colors.red);
+      }
     } catch (e) {
-      
-      _showSnackBar(context, "Terjadi kesalahan: ${e.toString()}", Colors.red);
+      if (context.mounted) {
+        _showSnackBar(context, "Terjadi kesalahan: ${e.toString()}", Colors.red);
+      }
     }
   }
 
@@ -123,18 +124,6 @@ Future<void> login({
   }
 }
 
-  void _handleError(BuildContext context, Object e) {
-    String message = "Terjadi kesalahan";
-    if (e.toString().contains('wrong-password')) {
-      message = "Password salah";
-    } else if (e.toString().contains('user-not-found')) {
-      message = "Email tidak ditemukan";
-    }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
-  }
 
   
   void _showSnackBar(BuildContext context, String message, Color color) {

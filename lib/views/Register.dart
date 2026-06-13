@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:goatcheck/controllers/auth.dart';
@@ -8,16 +5,6 @@ import 'package:goatcheck/main.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFEFFFC8)),
-      ),
-    );
-  }
 
   @override
   State<Register> createState() => _RegisterState();
@@ -167,7 +154,7 @@ class _RegisterState extends State<Register> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF85CB33),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(12),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Row(
