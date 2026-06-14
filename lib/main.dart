@@ -113,10 +113,11 @@ class _LoginPageState extends State<LoginPage> {
             left: -50,
             child: Opacity(
               opacity: 0.2,
-              child: Icon(
-                Icons.cruelty_free,
-                size: 300,
-                color: Colors.green.shade300,
+              child: Image.asset(
+                'assets/images/goat_logo.png',
+                width: 300,
+                height: 300,
+                fit: BoxFit.contain,
               ),
             ),
           ),
