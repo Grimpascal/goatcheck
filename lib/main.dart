@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/gestures.dart';
 import 'package:goatcheck/controllers/auth.dart';
 import 'package:goatcheck/views/Register.dart';
@@ -100,6 +101,36 @@ class _LoginPageState extends State<LoginPage> {
   void initState(){
     super.initState();
     _authController = AuthController();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool rememberMe = prefs.getBool('remember_me') ?? false;
+      if (rememberMe) {
+        setState(() {
+          _rememberMe = true;
+          _emailController.text = prefs.getString('email') ?? '';
+          _passwordController.text = prefs.getString('password') ?? '';
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveRememberedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('email', _emailController.text.trim());
+        await prefs.setString('password', _passwordController.text);
+      } else {
+        await prefs.remove('remember_me');
+        await prefs.remove('email');
+        await prefs.remove('password');
+      }
+    } catch (_) {}
   }
 
   @override
@@ -205,12 +236,16 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {
-                        _authController.login(
-                          context: context,
-                          email: _emailController.text,
-                          password: _passwordController.text,
-                          targetPage: const dashboard());
+                      onPressed: () async {
+                        await _saveRememberedCredentials();
+                        if (context.mounted) {
+                          _authController.login(
+                            context: context,
+                            email: _emailController.text,
+                            password: _passwordController.text,
+                            targetPage: const dashboard(),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF85CB33 ),
