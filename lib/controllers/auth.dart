@@ -188,4 +188,101 @@ Future<void> resetPassword({
       }
     }
   }
+
+  Future<void> updateProfile({
+    required BuildContext context,
+    required String nama,
+    required String email,
+    required String currentPassword,
+    required String newPassword,
+    required String confirmNewPassword,
+  }) async {
+    User? user = _auth.currentUser;
+    if (user == null) {
+      _showSnackBar(context, "Pengguna tidak teridentifikasi", Colors.red);
+      return;
+    }
+
+    if (nama.trim().isEmpty || email.trim().isEmpty) {
+      _showSnackBar(context, "Nama dan email tidak boleh kosong", Colors.orange);
+      return;
+    }
+
+    bool changingEmail = email.trim() != user.email;
+    bool changingPassword = newPassword.isNotEmpty;
+
+    try {
+      // 1. Reauthentication is required if changing email or password
+      if (changingEmail || changingPassword) {
+        if (currentPassword.isEmpty) {
+          _showSnackBar(context, "Masukkan password saat ini untuk memverifikasi perubahan sensitif", Colors.orange);
+          return;
+        }
+
+        // Reauthenticate
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+        await user.reauthenticateWithCredential(credential);
+
+        // Update email if requested
+        if (changingEmail) {
+          await user.updateEmail(email.trim());
+        }
+
+        // Update password if requested
+        if (changingPassword) {
+          if (newPassword != confirmNewPassword) {
+            _showSnackBar(context, "Konfirmasi password baru tidak sesuai", Colors.red);
+            return;
+          }
+          if (newPassword.length < 8) {
+            _showSnackBar(context, "Password baru minimal 8 huruf", Colors.red);
+            return;
+          }
+          await user.updatePassword(newPassword.trim());
+        }
+      }
+
+      // 2. Update Firestore document
+      Map<String, dynamic> updateData = {
+        'nama': nama.trim(),
+        'email': email.trim(),
+        'updated_at': FieldValue.serverTimestamp(),
+      };
+      
+      if (changingPassword) {
+        updateData['password'] = newPassword.trim();
+      }
+
+      await _db.collection('peternak').doc(user.uid).update(updateData);
+
+      if (context.mounted) {
+        _showSnackBar(context, "Profil berhasil diperbarui!", Colors.green);
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = "Gagal memperbarui profil";
+      if (e.code == 'wrong-password') {
+        message = "Password saat ini salah";
+      } else if (e.code == 'requires-recent-login') {
+        message = "Sesi telah berakhir, silakan masuk kembali";
+      } else if (e.code == 'email-already-in-use') {
+        message = "Email sudah digunakan oleh akun lain";
+      } else if (e.code == 'invalid-email') {
+        message = "Format email tidak valid";
+      } else if (e.code == 'weak-password') {
+        message = "Password baru terlalu lemah";
+      } else {
+        message = e.message ?? message;
+      }
+      if (context.mounted) {
+        _showSnackBar(context, message, Colors.red);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showSnackBar(context, "Terjadi kesalahan: ${e.toString()}", Colors.red);
+      }
+    }
+  }
 }

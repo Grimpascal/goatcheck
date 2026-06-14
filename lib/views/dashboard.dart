@@ -6,6 +6,7 @@ import 'package:goatcheck/controllers/auth.dart';
 import 'package:goatcheck/controllers/kambing.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:goatcheck/services/notification_service.dart';
+import 'package:goatcheck/views/edit_profile.dart';
 
 class dashboard extends StatefulWidget {
   const dashboard({super.key});
@@ -57,46 +58,55 @@ class _dashboardState extends State<dashboard> {
         backgroundColor: const Color(0xFFEFFFC8),
         elevation: 0,
         titleSpacing: 30,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person_outline, color: Colors.black),
-            ),
-            const SizedBox(width: 12),
-            StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('peternak')
-                  .doc(FirebaseAuth.instance.currentUser?.uid ?? '')
-                  .snapshots(),
-              builder: (context, userSnapshot) {
-                String userName = "User";
-                if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                  userName = userData['nama'] ?? "User";
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _getGreeting(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EditProfilePage()),
+            );
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            children: [
+              const CircleAvatar(
+                radius: 22,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person_outline, color: Colors.black),
+              ),
+              const SizedBox(width: 12),
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('peternak')
+                    .doc(FirebaseAuth.instance.currentUser?.uid ?? '')
+                    .snapshots(),
+                builder: (context, userSnapshot) {
+                  String userName = "User";
+                  if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                    final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                    userName = userData['nama'] ?? "User";
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _getGreeting(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
-                    Text(
-                      userName,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
+                      Text(
+                        userName,
+                        style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           IconButton(
