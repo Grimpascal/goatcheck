@@ -285,4 +285,17 @@ Future<void> resetPassword({
       }
     }
   }
+
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 11) {
+      return "Halo, Selamat Pagi";
+    } else if (hour >= 11 && hour < 15) {
+      return "Halo, Selamat Siang";
+    } else if (hour >= 15 && hour < 18) {
+      return "Halo, Selamat Sore";
+    } else {
+      return "Halo, Selamat Malam";
+    }
+  }
 }

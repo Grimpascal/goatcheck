@@ -23,6 +23,20 @@ class NotificationService {
         // Optional click handler
       },
     );
+
+    // Buat channel notifikasi secara eksplisit agar service latar belakang tidak crash
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'goat_temp_channel_id',
+      'Peringatan Suhu Kambing',
+      description: 'Notifikasi peringatan jika suhu kambing tinggi',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
   Future<void> requestPermissions() async {

@@ -8,6 +8,9 @@ import 'package:goatcheck/services/notification_service.dart';
 
 class MyBackgroundService {
   static Future<void> initializeService() async {
+    // Pastikan channel notifikasi dibuat sebelum service dimulai
+    await NotificationService().init();
+
     final service = FlutterBackgroundService();
 
     await service.configure(
