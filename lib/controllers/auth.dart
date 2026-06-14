@@ -234,11 +234,15 @@ Future<void> resetPassword({
         // Update password if requested
         if (changingPassword) {
           if (newPassword != confirmNewPassword) {
-            _showSnackBar(context, "Konfirmasi password baru tidak sesuai", Colors.red);
+            if (context.mounted) {
+              _showSnackBar(context, "Konfirmasi password baru tidak sesuai", Colors.red);
+            }
             return;
           }
           if (newPassword.length < 8) {
-            _showSnackBar(context, "Password baru minimal 8 huruf", Colors.red);
+            if (context.mounted) {
+              _showSnackBar(context, "Password baru minimal 8 huruf", Colors.red);
+            }
             return;
           }
           await user.updatePassword(newPassword.trim());
