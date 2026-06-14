@@ -99,6 +99,14 @@ void onStart(ServiceInstance service) async {
                 title: "PERINGATAN SUHU TINGGI!",
                 body: "Kambing $name memiliki suhu tinggi: ${temp.toStringAsFixed(1)}°C (>= 35°C)",
               );
+
+              await FirebaseFirestore.instance.collection('riwayat_notifikasi').add({
+                'kambing_id': docId,
+                'nama': name,
+                'suhu': temp,
+                'timestamp': FieldValue.serverTimestamp(),
+                'pesan': "Kambing $name memiliki suhu tinggi: ${temp.toStringAsFixed(1)}°C (>= 35°C)",
+              });
             } catch (_) {
               // Fail silently
             }

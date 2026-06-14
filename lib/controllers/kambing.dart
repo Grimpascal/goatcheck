@@ -238,13 +238,22 @@ class KambingController {
     if (temp >= 35.0) {
       if (!_notifiedGoats.contains(docId)) {
         _notifiedGoats.add(docId);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           showTempWarningNotification(context, name, temp);
-          notificationService.showNotification(
+          await notificationService.showNotification(
             id: docId.hashCode,
             title: "PERINGATAN SUHU TINGGI!",
             body: "Kambing $name memiliki suhu tinggi: ${temp.toStringAsFixed(1)}°C (>= 35°C)",
           );
+          try {
+            await FirebaseFirestore.instance.collection('riwayat_notifikasi').add({
+              'kambing_id': docId,
+              'nama': name,
+              'suhu': temp,
+              'timestamp': FieldValue.serverTimestamp(),
+              'pesan': "Kambing $name memiliki suhu tinggi: ${temp.toStringAsFixed(1)}°C (>= 35°C)",
+            });
+          } catch (_) {}
         });
       }
     } else {

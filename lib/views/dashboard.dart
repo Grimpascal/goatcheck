@@ -9,6 +9,7 @@ import 'package:goatcheck/services/notification_service.dart';
 import 'package:goatcheck/views/edit_profile.dart';
 import 'package:goatcheck/views/widgets/add_kambing_sheet.dart';
 import 'package:goatcheck/views/widgets/detail_kambing_sheet.dart';
+import 'package:goatcheck/views/riwayat_notifikasi.dart';
 
 class dashboard extends StatefulWidget {
   const dashboard({super.key});
@@ -110,6 +111,51 @@ class _dashboardState extends State<dashboard> {
           ),
         ),
         actions: [
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('riwayat_notifikasi').snapshots(),
+            builder: (context, snapshot) {
+              final int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RiwayatNotifikasiPage()),
+                      );
+                    },
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 14,
+                          minHeight: 14,
+                        ),
+                        child: Text(
+                          count > 9 ? '9+' : '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () {
