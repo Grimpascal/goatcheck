@@ -67,14 +67,73 @@ Setelah semua perangkat diklasifikasikan, aplikasi menghitung rata-rata aktivita
 
 ---
 
-## 🚀 Cara Menjalankan Projek
-1. Pastikan Anda telah menginstal [Flutter SDK](https://docs.flutter.dev/get-started/install) versi terbaru.
-2. Clone repositori ini ke komputer lokal Anda.
-3. Jalankan perintah berikut untuk mengunduh semua dependensi proyek:
+## 🚀 Panduan Clone & Instalasi Proyek (Step-by-Step)
+
+Berikut adalah panduan lengkap untuk melakukan *cloning* repositori dan menjalankan aplikasi Goatcheck di lingkungan lokal Anda.
+
+### 📋 Prasyarat Sistem
+Sebelum memulai, pastikan komputer Anda telah terinstal:
+1. **Git**: Untuk meng-clone repositori ([Download Git](https://git-scm.com/)).
+2. **Flutter SDK**: Gunakan Flutter versi stabil terbaru (minimum versi `3.10.7` sesuai `pubspec.yaml`). ([Panduan Instalasi Flutter](https://docs.flutter.dev/get-started/install)).
+3. **Android Studio** atau **VS Code**: Dilengkapi dengan ekstensi **Flutter** dan **Dart**.
+4. **Android SDK & Build Tools**: Diperlukan untuk melakukan build aplikasi Android.
+5. **Perangkat/Emulator**: Emulator Android (AVD) atau HP Android fisik dengan fitur USB Debugging aktif.
+
+---
+
+### 📥 Langkah 1: Kloning Repositori (Clone)
+Buka terminal (Command Prompt, PowerShell, atau Git Bash) di komputer Anda, lalu jalankan perintah berikut:
+
+```bash
+# Clone repositori ke lokal
+git clone https://github.com/Grimpascal/goatcheck.git
+
+# Masuk ke direktori hasil clone
+cd goatcheck
+```
+
+---
+
+### ⚙️ Langkah 2: Instalasi Dependensi (Installation & Setup)
+Jalankan perintah ini di root direktori proyek untuk mendownload dan mengintegrasikan seluruh library/package Flutter yang digunakan (seperti Firebase, Flutter Background Service, dll.):
+
+```bash
+flutter pub get
+```
+
+Jika Anda ingin memastikan instalasi lingkungan Flutter Anda sudah lengkap dan tidak ada masalah konfigurasi, Anda dapat memeriksa dengan perintah:
+```bash
+flutter doctor
+```
+
+---
+
+### 🔑 Langkah 3: Konfigurasi Firebase (Opsional)
+Proyek ini sudah dilengkapi file konfigurasi default Android di path:
+`android/app/google-services.json`
+
+*Catatan:* Jika Anda ingin menggunakan database Firebase milik Anda sendiri:
+1. Daftarkan aplikasi di [Firebase Console](https://console.firebase.google.com/).
+2. Unduh file `google-services.json` yang baru dari Firebase Console.
+3. Timpa file lama di path [android/app/google-services.json](file:///d:/PBM/goatcheck/android/app/google-services.json) dengan file yang baru diunduh.
+4. Sesuaikan konfigurasi inisialisasi Firebase (seperti `apiKey` dan `appId` untuk latar belakang) pada file [background_service.dart](file:///d:/PBM/goatcheck/lib/services/background_service.dart#L48-L53) jika diperlukan.
+
+---
+
+### 📱 Langkah 4: Menjalankan Aplikasi (Running)
+1. Sambungkan HP Android fisik Anda melalui kabel USB (pastikan USB Debugging aktif) atau jalankan Emulator Android dari Android Studio / VS Code.
+2. Periksa apakah perangkat terdeteksi dengan perintah:
    ```bash
-   flutter pub get
+   flutter devices
    ```
-4. Jalankan aplikasi di emulator atau perangkat fisik Anda:
+3. Jalankan aplikasi menggunakan perintah berikut:
    ```bash
    flutter run
    ```
+4. Jika Anda menggunakan VS Code, Anda juga bisa menekan tombol `F5` untuk menjalankan aplikasi dalam mode *Debugging*.
+
+---
+
+### 🛠️ Troubleshooting & Tips
+- **Error pada Gradle**: Jika mengalami masalah *build* Gradle pertama kali, jalankan `flutter clean` lalu ulangi `flutter pub get` dan `flutter run`.
+- **Izin Background Service**: Karena aplikasi ini menggunakan `flutter_background_service` untuk monitoring suhu $\ge 35^\circ\text{C}$ di latar belakang, pastikan memberikan izin autostart dan mematikan penghemat baterai khusus untuk aplikasi Goatcheck pada HP Android Anda agar background service dapat berjalan optimal.
